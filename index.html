@@ -10,7 +10,7 @@
     <!-- Hero Section -->
     <header class="relative h-screen">
         <div class="absolute inset-0 bg-black/30"></div>
-        <img src="/api/placeholder/1920/1080" alt="Casa moderna com design contemporâneo" class="w-full h-full object-cover">
+        <img src="https://i.ibb.co/PgV9T4q/01.jpg" alt="Casa moderna com design contemporâneo" class="w-full h-full object-cover">
         <div class="absolute inset-0 flex flex-col justify-center items-center text-white px-4">
             <h1 class="text-5xl md:text-6xl font-bold text-center mb-6">Paraíso da Lagoa</h1>
             <p class="text-xl md:text-2xl text-center mb-8">Design contemporâneo em harmonia com a natureza</p>
@@ -49,7 +49,7 @@
         <div class="container mx-auto px-4 max-w-md">
             <div class="bg-white rounded-lg shadow-lg p-8">
                 <h2 class="text-3xl font-bold text-center mb-6">Garanta sua visita</h2>
-                <form class="space-y-4">
+                <form id="leadForm" class="space-y-4">
                     <div>
                         <label class="block text-gray-700 mb-2" for="nome">Nome completo</label>
                         <input type="text" id="nome" name="nome" required
@@ -60,14 +60,77 @@
                         <input type="tel" id="telefone" name="telefone" required
                             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-gray-500">
                     </div>
-                    <button type="submit" 
+                    <button type="submit" id="submitBtn"
                         class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
                         Agendar visita
                     </button>
+                    <p id="submitMessage" class="text-center mt-4 hidden"></p>
                 </form>
             </div>
         </div>
     </section>
+
+    <!-- Footer permanece igual -->
+    <script>
+        const form = document.getElementById('leadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitMessage = document.getElementById('submitMessage');
+    
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Desabilita o botão durante o envio
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Enviando...';
+    
+            const formData = new FormData(form);
+            const data = {
+                nome: formData.get('nome'),
+                telefone: formData.get('telefone')
+            };
+    
+            try {
+                // Faz o POST para o Google Script
+                await fetch('https://script.google.com/macros/s/AKfycbxa7e0h73w3qbKK2nlpnD26T1-Wm2C-D32EHLyQUz0_1vvic2LBy9mmq-4MEtn9mCXc/exec', {
+                    method: 'POST',
+                    mode: 'no-cors', // Importante para evitar erros de CORS
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    body: JSON.stringify(data)
+                });
+    
+                // Mostra mensagem de sucesso
+                submitMessage.innerText = 'Obrigado! Em breve entraremos em contato.';
+                submitMessage.className = 'text-center mt-4 text-green-600';
+                submitMessage.classList.remove('hidden');
+                form.reset();
+    
+            } catch (error) {
+                // Mostra mensagem de erro
+                submitMessage.innerText = 'Ocorreu um erro. Por favor, tente novamente.';
+                submitMessage.className = 'text-center mt-4 text-red-600';
+                submitMessage.classList.remove('hidden');
+                console.error('Erro:', error);
+            }
+    
+            // Reabilita o botão
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Agendar visita';
+        });
+    
+        // Máscara para o telefone
+        const telefone = document.getElementById('telefone');
+        telefone.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+                e.target.value = value;
+            }
+        });
+    </script>
+
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-8">
